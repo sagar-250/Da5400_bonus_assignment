@@ -1,0 +1,63 @@
+To ensure your implementation is functioning exactly as described in the paper, you can use the authors' results as a benchmark. Here is a guide to the specific trends your metrics, tables, and plots should follow as your experiment runs.
+
+### **Table Trends to Match**
+
+**1. Overall Performance Across Imbalance Ratios (Table 1 Benchmark)**
+
+* 
+**The Baseline Drop:** As you increase the imbalance ratio of your dataset (e.g., from 1 to 20, 50, and 100), your Base Model's overall accuracy should drop significantly.
+
+
+* 
+**Consistent Superiority:** Your implementation of "Our Method" should consistently achieve higher overall accuracy than both the Base Model and standard Class-Balance Loss across all imbalanced scenarios (ratios 20, 50, and 100).
+
+
+* 
+**The Balanced Baseline:** If you run an experiment with an imbalance ratio of 1 (a perfectly balanced dataset), your method should perform nearly identically to the Base Model, as no extreme re-weighting is necessary.
+
+
+
+**2. Majority vs. Minority Class Dynamics (Table 2 Benchmark)**
+
+* 
+**The Baseline Bias:** When looking at the Base Model, the accuracy on Majority classes should be vastly higher than on Minority classes.
+
+
+* 
+**The Class-Balance Trade-off:** If you test standard Class-Balance loss, you should see Minority class accuracy increase, but Majority class accuracy will decrease compared to the Base Model.
+
+
+* 
+**The Instance-Level Win:** Your implementation should simultaneously improve the accuracy of **both** the Majority classes and the Minority classes compared to the Base Model. This proves your method is finding the "hard" instances even within the majority groups.
+
+
+
+**3. Sub-Class/Hidden Imbalance Correction (Table 3 Benchmark)**
+
+* 
+**Reduced Ratios:** If you calculate the effective Imbalance Ratio based on your dynamic sampling weights, you should see both the overall Class Ratio and the hidden Sub-Class Ratio decrease significantly compared to the raw dataset distribution.
+
+
+* 
+**Minority Sub-Class Boost:** Your accuracy on the hidden minority sub-classes should see a massive improvement compared to the Base Model.
+
+
+
+---
+
+### **Plot Trends to Match**
+
+**1. Unlearning Frequency Plot (Figure 3 Benchmark)**
+
+* **Correlation with Rarity:** If you track the "unlearning frequency" (how often an instance's loss increases between epochs), you should plot it against the class/sub-class size. The plot must show an inverse relationship: rarer classes or sub-classes should naturally exhibit a higher unlearning frequency.
+
+
+
+**2. Training Dynamics Plots (Figure 4 Benchmark)**
+
+* 
+**Loss Curve Trend:** If you plot the normalized loss over training epochs for instances you know are "Easy," "Normal," and "Hard" (or just track minority vs. majority samples), the "Hard" instances should display more jagged, fluctuating loss curves, representing those intermittent unlearning events.
+
+
+* 
+**Difficulty Convergence Trend:** When you plot your calculated `D_{i,T}` (Instance Difficulty) over epochs, the values should fluctuate initially but eventually converge to steady horizontal lines. Crucially, the final converged difficulty value for "Hard" (or minority) instances must plateau significantly higher than the values for "Easy" instances.
