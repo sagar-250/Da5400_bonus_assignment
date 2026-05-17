@@ -2,7 +2,7 @@
 
 This repository implements a dynamic instance-level re-balancing strategy for training neural networks on class-imbalanced datasets, based on the research paper: *"A Re-Balancing Strategy for Class-Imbalanced Classification Based on Instance Difficulty"* (Yu et al., 2021).
 
-## 🚀 Overview
+## Overview
 
 Unlike traditional methods that re-balance data at the **class level** (e.g., Focal Loss, Class-Balanced Loss), this approach focuses on **instance difficulty**. It tracks the "learning speed" of every individual sample during training. Instances that the model frequently "unlearns" (where prediction probability decreases between epochs) are identified as harder and assigned higher sampling probabilities in subsequent epochs.
 
@@ -14,7 +14,7 @@ Unlike traditional methods that re-balance data at the **class level** (e.g., Fo
 
 ---
 
-## 🧠 Core Concept: Instance Difficulty
+## Core Concept: Instance Difficulty
 
 The core of the strategy is the calculation of **Instance Difficulty ($D_{i,T}$)**, which is the ratio of accumulated **Unlearning Trend ($du$)** to accumulated **Learning Trend ($dl$)**.
 
@@ -25,7 +25,7 @@ The core of the strategy is the calculation of **Instance Difficulty ($D_{i,T}$)
 
 ---
 
-## 🛠️ Project Structure
+## Project Structure
 
 - `models.py`: PyTorch implementations of `SimpleMLP` and `ECGCNN`.
 - `train_rebalance.py`: Core logic for the re-balancing training loop and difficulty calculations.
@@ -36,7 +36,7 @@ The core of the strategy is the calculation of **Instance Difficulty ($D_{i,T}$)
 
 ---
 
-## ⚙️ Installation
+## Installation
 
 1. Clone the repository.
 2. Ensure you have the following dependencies installed:
@@ -67,7 +67,7 @@ This will:
 
 ---
 
-## 📈 Results & Analysis
+## Results & Analysis
 
 ### Performance Metrics
 The results are categorized into "Shots" based on class frequency in the training set:
