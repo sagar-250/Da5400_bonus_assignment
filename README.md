@@ -47,7 +47,7 @@ The core of the strategy is the calculation of **Instance Difficulty ($D_{i,T}$)
 
 ---
 
-## 📊 Usage
+## Usage
 
 To run the full evaluation pipeline for the MIT-BIH dataset:
 
@@ -83,5 +83,5 @@ As detailed in `rebalancing_failure_analysis.md`:
 
 ---
 
-## 📄 References
+## References
 - Yu, et al. (2021). *A Re-Balancing Strategy for Class-Imbalanced Classification Based on Instance Difficulty.*
