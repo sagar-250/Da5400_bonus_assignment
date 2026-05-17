@@ -1,87 +1,91 @@
-# Instance-Level Re-Balancing for Class-Imbalanced Classification
+<h1 align="center"> ILR: Instance-Level Re-Balancing for Class-Imbalanced Classification
+</h1>
 
-This repository implements a dynamic instance-level re-balancing strategy for training neural networks on class-imbalanced datasets, based on the research paper: *"A Re-Balancing Strategy for Class-Imbalanced Classification Based on Instance Difficulty"* (Yu et al., 2021).
+**ILR** (Instance-Level Re-balancing) is a dynamic data resampling framework that prioritizes "difficult" samples by tracking their learning speed. Inspired by human learning, it measures an instance's difficulty based on its unlearning frequency—how often the model's prediction accuracy drops between training epochs—and dynamically adjusts sampling weights to focus on these hard-to-learn instances.
 
-## Overview
+![ILR Dynamics](figure_4_mit_bih_dynamics.png)
+<p align="center">
+  <b>Figure 1:</b> Visualization of training dynamics. The plots show Loss and Instance Difficulty tracking for "Easy" vs. "Hard" samples over 20 epochs on the MIT-BIH dataset.
+</p>
 
-Unlike traditional methods that re-balance data at the **class level** (e.g., Focal Loss, Class-Balanced Loss), this approach focuses on **instance difficulty**. It tracks the "learning speed" of every individual sample during training. Instances that the model frequently "unlearns" (where prediction probability decreases between epochs) are identified as harder and assigned higher sampling probabilities in subsequent epochs.
+ILR achieves **competitive performance** on long-tailed datasets by successfully identifying and re-weighting minority sub-classes and difficult majority-class instances, outperforming traditional class-level balancing methods (like Inverse Frequency) in Many-Shot, Med-Shot, and Few-Shot scenarios.
 
-### Key Features
-- **Dynamic Resampling:** Automatically adjusts sampling weights for each training instance after every epoch.
-- **Unlearning Trend Tracking:** Measures how much the model "forgets" specific samples.
-- **Support for Multiple Datasets:** Includes benchmarks for MIT-BIH (Arrhythmia) and HELENA datasets.
-- **Comparative Analysis:** Compares the proposed method against standard Baseline and Class-Level Balancing (Inverse Frequency).
+<p align="center">
+  <img src="figure_accuracy_mitbih.png" width="45%" />
+  <img src="figure_accuracy_helena.png" width="45%" />
+</p>
 
----
+<p align="center">
+  <b>Figure 2:</b>
+  (a) Accuracy comparison on the MIT-BIH (ECG) dataset using CNNs.
+  (b) Accuracy comparison on the HELENA (Proteomics) dataset using MLPs.
+</p>
 
-## Core Concept: Instance Difficulty
+> [!NOTE]
+> Performance metrics are categorized by "Shots": **Many-Shot** (>1000 samples), **Med-Shot** (100-1000 samples), and **Few-Shot** (<100 samples). While ILR effectively reduces bias, it cannot synthesize information; extremely low-sample classes may still hit a "representation wall" if the underlying data lacks diversity.
 
-The core of the strategy is the calculation of **Instance Difficulty ($D_{i,T}$)**, which is the ratio of accumulated **Unlearning Trend ($du$)** to accumulated **Learning Trend ($dl$)**.
+## Environment Setup
 
-1.  **Unlearning ($du$):** Captures worsening predictions for the ground-truth class and rising predictions for incorrect classes.
-2.  **Learning ($dl$):** Captures improvement in predictions for the ground-truth class.
-3.  **Sampling Weight ($w$):** Calculated by normalizing the difficulty $D$:
-    $$w_{i,t} = \frac{D_{i,t}}{\sum_{j=1}^N D_{j,t}}$$
+Set up the Python environment and install the required dependencies:
 
----
+```shell
+pip install torch pandas numpy scikit-learn matplotlib
+```
 
-## Project Structure
+## Dataset Format
 
-- `models.py`: PyTorch implementations of `SimpleMLP` and `ECGCNN`.
-- `train_rebalance.py`: Core logic for the re-balancing training loop and difficulty calculations.
-- `data_prep_mitbih.py` / `data_prep_helena.py`: Data loading and preprocessing scripts.
-- `evaluate_mitbih.py` / `evaluate_helena.py`: Main execution scripts that train models and generate result tables/figures.
-- `rebalancing_failure_analysis.md`: Detailed report on experimental hurdles and edge cases.
-- `mitbih/`: Contains the MIT-BIH Arrhythmia dataset CSV files.
+This repository supports tabular and signal data in CSV format. Examples for **MIT-BIH** and **HELENA** are provided.
 
----
+### 1. Directory Structure
+Datasets should be placed in their own directory (e.g., `./mitbih/`).
 
-## Installation
+### 2. Required Files
+For each dataset, you need:
+- `*_train.csv` — Training samples with labels in the last column.
+- `*_test.csv` — Test samples with labels in the last column.
 
-1. Clone the repository.
-2. Ensure you have the following dependencies installed:
-   ```bash
-   pip install torch pandas numpy scikit-learn matplotlib
-   ```
-3. (Optional) Download additional datasets if required (MIT-BIH is already included in `mitbih/`).
+### 3. CSV Format
+The data should be comma-separated, where each row is a sample and the last column is the integer class label.
 
----
+```csv
+0.97, 0.86, 0.45, ..., 0
+0.61, 0.55, 0.32, ..., 1
+```
+
+## Configuration and Hyperparameters
+
+Training parameters are configured within the evaluation scripts (`evaluate_mitbih.py` or `evaluate_helena.py`).
+
+### Key Hyperparameters
+- `c` — Smoothing prior constant (default: `1.0` or `0.01`). Higher values stabilize early training but reduce sensitivity to unlearning.
+- `epochs` — Total training iterations (default: `20` to `100`).
+- `batch_size` — Samples per gradient update (default: `128` to `512`).
+- `use_cumulative` — Boolean to decide whether to use accumulated difficulty over all previous epochs (default: `True`).
 
 ## Usage
 
-To run the full evaluation pipeline for the MIT-BIH dataset:
+Run the evaluation scripts to train models and generate result tables/figures:
 
-```bash
+```shell
+# For MIT-BIH (ECG Signal Classification)
 python evaluate_mitbih.py
+
+# For HELENA (Tabular Proteomics Classification)
+python evaluate_helena.py
 ```
 
-This will:
-1. Load the MIT-BIH data.
-2. Train a **Baseline CNN**, a **Class-Balanced CNN**, and the **Proposed Re-balanced CNN**.
-3. Generate accuracy metrics (Overall, Many-Shot, Med-Shot, Few-Shot).
-4. Save comparison results to `table_mitbih_comparison.csv`.
-5. Generate visualization plots:
-   - `figure_1_mit_bih_dist.png`: Class distribution.
-   - `figure_3_mit_bih_unlearn.png`: Unlearning frequency per class.
-   - `figure_4_mit_bih_dynamics.png`: Training dynamics (Loss/Difficulty vs. Epochs).
+These scripts will automatically:
+1. Preprocess the data.
+2. Train **Baseline**, **Class-Balanced**, and **Proposed Re-balanced** models.
+3. Export comparison results to `.csv` and generate visualization plots (`figure_*.png`).
 
----
-
-## Results & Analysis
-
-### Performance Metrics
-The results are categorized into "Shots" based on class frequency in the training set:
-- **Many-Shot:** Majority classes (>1000 samples).
-- **Med-Shot:** Intermediate classes (100-1000 samples).
-- **Few-Shot:** Minority classes (<100 samples).
-
-### Experimental Findings
-As detailed in `rebalancing_failure_analysis.md`:
-- **Bias vs. Information:** The method effectively fixes model bias but cannot synthesize information for extremely low-sample classes (Few-Shot representation wall).
-- **Stability:** The cumulative difficulty metric requires a sufficient number of epochs to stabilize.
-- **Dataset Suitability:** Works best on datasets where "instance difficulty" is non-trivial (e.g., medical signals) rather than perfectly separable data.
-
----
-
-## References
-- Yu, et al. (2021). *A Re-Balancing Strategy for Class-Imbalanced Classification Based on Instance Difficulty.*
+## Citation
+If you find this implementation useful in your research, please cite the original paper:
+```bibtex
+@article{yu2021rebalancing,
+  title={A Re-Balancing Strategy for Class-Imbalanced Classification Based on Instance Difficulty},
+  author={Yu, Liang and others},
+  journal={arXiv preprint},
+  year={2021}
+}
+```
